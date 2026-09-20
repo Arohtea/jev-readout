@@ -1,0 +1,22 @@
+{
+  "name": "jev-playground",
+  "version": "1.0.0",
+  "description": "Jev 试用台 — 用 TypeSafe AI 的 System One 模型做结构化决策",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "typesafe",
+    "jev",
+    "system-one",
+    "structured-decision"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^18.0.1",
+    "express": "^5.2.1"
+  }
+}

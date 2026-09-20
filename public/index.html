@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jev Readout · 结构化决策读数</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<!-- 内联图标：一个标尺刻度，和页面本身的仪表读数主题一致，也省掉一次请求 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23E9EBE6'/%3E%3Crect x='5' y='14' width='16' height='4' fill='%231B4B8F'/%3E%3Cline x1='16' y1='6' x2='16' y2='26' stroke='%23C1440E' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ══ 页眉：仪器铭牌 ══════════════════════════════════════ -->
+<header class="masthead">
+  <div>
+    <div class="title">
+      <h1>Jev Readout</h1>
+      <span class="version">rev 1.0</span>
+    </div>
+    <p class="claim">
+      把一段内容交给 Jev，得到一组带概率分布的结构化判断。
+      页面上显示的请求与响应，就是实际发出去和收到的那份字节，没有中间层。
+    </p>
+  </div>
+
+  <dl class="nameplate" id="nameplate">
+    <div><dt>Model</dt><dd id="np-model">—</dd></div>
+    <div><dt>Endpoint</dt><dd>api.typesafe.ai</dd></div>
+    <div><dt>Round-trip</dt><dd id="np-time">—</dd></div>
+  </dl>
+</header>
+
+<!-- ══ 主体 ════════════════════════════════════════════════ -->
+<main class="sheet">
+
+
+  <!-- ── 左栏：投料 ─────────────────────────────────────── -->
+  <section class="col-a">
+    <div class="hdr">
+      <h2>投料</h2>
+      <span class="en">Input</span>
+      <span class="aside" id="input-note"></span>
+    </div>
+
+    <div class="presets" id="presets" role="group" aria-label="场景预设"></div>
+    <p class="note" id="preset-note"></p>
+
+    <label for="state" class="hdr" style="margin-top:20px">
+      <h2>State</h2>
+      <span class="en">待判断的原文</span>
+    </label>
+    <textarea id="state" spellcheck="false" aria-label="待判断的原文"></textarea>
+
+    <div class="hdr" style="margin-top:22px">
+      <h2>Questions</h2>
+      <span class="en">问句</span>
+      <span class="aside" id="q-count"></span>
+    </div>
+
+    <!-- 读数视图：读 -->
+    <ul class="questions" id="questions"></ul>
+
+    <!--
+      编辑视图：改。
+      这里编辑的 JSON 就是请求体里 questions 字段本身，不是某种表单的中间表示。
+      所以自定义问句的唯一格式要求，就是它得是合法的 Jev 问句。
+    -->
+    <div id="q-edit" hidden>
+      <textarea id="q-json" spellcheck="false" aria-label="问句 JSON"></textarea>
+      <p class="note" id="q-msg" role="status"></p>
+    </div>
+
+    <div class="go">
+      <button id="run" type="button">判读</button>
+      <button id="q-toggle" class="ghost" type="button">自定义问句</button>
+      <button id="q-reset" class="ghost" type="button" hidden>还原预设</button>
+      <span class="keys">⌘/Ctrl + Enter</span>
+    </div>
+  </section>
+
+  <!-- ── 右栏：读数 ─────────────────────────────────────── -->
+  <section class="col-b">
+    <div class="hdr">
+      <h2>读数</h2>
+      <span class="en">Readout</span>
+      <span class="aside" id="answer-count"></span>
+    </div>
+
+    <div id="verdict" hidden></div>
+
+    <div id="answers">
+      <div class="void">
+        <p>左侧按下「判读」，这里会显示每个问句的概率分布。</p>
+        <p class="dim">分布比结论更能说明问题——它同时告诉你答案和把握。</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ══ 通信记录 ════════════════════════════════════════════ -->
+<section class="wire">
+  <div class="hdr">
+    <h2>通信记录</h2>
+    <span class="en">Wire</span>
+    <span class="aside" id="wire-status">尚无请求</span>
+  </div>
+  <p class="note">
+    左侧每一次「判读」，都在这里原样留下发出去和收回来的内容。
+  </p>
+
+  <div class="wire-grid">
+    <div class="wire-block">
+      <div class="hdr"><h2>Request</h2><span class="en">POST /v1/systemone</span></div>
+      <pre id="wire-req">—</pre>
+    </div>
+    <div class="wire-block">
+      <div class="hdr"><h2>Response</h2><span class="en">原始返回</span></div>
+      <pre id="wire-res">—</pre>
+    </div>
+  </div>
+
+  <div class="wire-block" style="margin-top:22px">
+    <div class="hdr"><h2>Trace</h2><span class="en">本次调用的时序</span></div>
+    <div class="trace" id="wire-trace">
+      <div class="trace-step">
+        <span class="trace-t">—</span>
+        <span class="trace-w">等待第一次判读</span>
+        <span class="trace-d"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="app.js"></script>
+</body>
+</html>

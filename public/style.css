@@ -1,0 +1,738 @@
+/* ══════════════════════════════════════════════════════════════
+   Jev Readout — 样式
+   
+   取向：图表纸上的仪器读数记录，不是网页应用。
+   直角、发丝线、蓝图蓝的墨迹、偶尔一支红铅笔。
+   概率分布是主角，所以它的渲染方式（标尺）是整套设计的核心。
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* 纸 —— 冷调图表纸，不是暖米色 */
+  --paper:      #E9EBE6;
+  --paper-raise:#F1F3EF;
+  --paper-sunk: #DFE2DC;
+
+  /* 墨 */
+  --ink:   #14181D;
+  --ink-2: #4A525C;
+  --ink-3: #868D95;
+
+  /* 线 */
+  --rule:      #C3C8C0;
+  --rule-firm: #A8AFA5;
+
+  /* 蓝图蓝 —— 概率质量的颜色 */
+  --blue:      #1B4B8F;
+  --blue-pale: #B4C6DE;
+
+  /* 红铅笔 —— 只在"被选中"时出现，极其克制 */
+  --red: #C1440E;
+
+  --sans: "IBM Plex Sans Condensed", "PingFang SC", "Hiragino Sans GB",
+          "Microsoft YaHei", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas,
+          "PingFang SC", monospace;
+  --serif: "IBM Plex Serif", "Songti SC", "Noto Serif CJK SC", Georgia,
+           "SimSun", serif;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.55;
+  /* 图表纸的网格：物理记录纸上的印刷格 */
+  background-color: var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg,
+      rgba(20,24,29,.045) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg,
+      rgba(20,24,29,.045) 0 1px, transparent 1px 22px);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── 通用件 ───────────────────────────────────────────── */
+
+.hdr {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule-firm);
+  margin-bottom: 14px;
+}
+
+.hdr h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.hdr .en {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+
+.hdr .aside {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.note {
+  font-size: 12px;
+  color: var(--ink-2);
+  margin: 0 0 12px;
+}
+
+/* ══ 页眉 ═════════════════════════════════════════════════ */
+
+.masthead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 20px 32px 14px;
+  border-bottom: 2px solid var(--ink);
+  background: var(--paper);
+}
+
+.masthead .title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.masthead h1 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+
+.masthead .version {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+.masthead .claim {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  max-width: 52ch;
+}
+
+/* 规格牌 —— 像仪器铭牌 */
+.nameplate {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--rule-firm);
+  background: var(--paper-raise);
+}
+
+.nameplate div {
+  padding: 6px 12px;
+  border-left: 1px solid var(--rule);
+  text-align: left;
+}
+
+.nameplate div:first-child { border-left: 0; }
+
+.nameplate dt {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 2px;
+}
+
+.nameplate dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink);
+}
+
+/* ══ 版面 ═════════════════════════════════════════════════ */
+
+.sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 0;
+  align-items: start;
+}
+
+.col-a {
+  padding: 24px 28px 40px 32px;
+  border-right: 1px solid var(--rule-firm);
+}
+
+.col-b {
+  padding: 24px 32px 40px 28px;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 1020px) {
+  .sheet { grid-template-columns: 1fr; }
+  .col-a { border-right: 0; border-bottom: 1px solid var(--rule-firm); padding: 20px; }
+  .col-b { position: static; max-height: none; padding: 20px; }
+  .masthead { padding: 16px 20px 12px; }
+}
+
+/* ══ 场景选择 ═════════════════════════════════════════════ */
+
+.presets {
+  display: flex;
+  gap: 0;
+  margin-bottom: 14px;
+  border: 1px solid var(--rule-firm);
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.presets button {
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .04em;
+  padding: 5px 11px;
+  border: 0;
+  border-left: 1px solid var(--rule);
+  background: var(--paper-raise);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+
+.presets button:first-child { border-left: 0; }
+.presets button:hover { color: var(--ink); background: var(--paper-sunk); }
+
+.presets button[aria-pressed="true"] {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* ══ 被测量的原文 ═════════════════════════════════════════ */
+
+textarea {
+  width: 100%;
+  min-height: 232px;
+  resize: vertical;
+  padding: 15px 17px;
+  /* 原文是人写的话，所以用衬线 —— 与机器的读数形成对照 */
+  font-family: var(--serif);
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: var(--ink);
+  background: var(--paper-raise);
+  border: 1px solid var(--rule-firm);
+  border-radius: 0;
+  outline: none;
+  transition: border-color .14s, box-shadow .14s;
+}
+
+textarea:focus {
+  border-color: var(--blue);
+  box-shadow: inset 3px 0 0 var(--blue);
+}
+
+/* ══ 问句清单 ═════════════════════════════════════════════ */
+
+.questions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.q {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+  gap: 0 12px;
+  align-items: start;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+/* 问句 ID 不是装饰性的序号 —— 它是 API 协议里的真实键名 */
+.q-id {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--blue);
+  padding-top: 1px;
+  overflow-wrap: anywhere;
+}
+
+.q-body { min-width: 0; }
+
+.q-text {
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.q-crit {
+  margin-top: 5px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  line-height: 1.7;
+}
+
+.q-crit b { color: var(--ink-2); font-weight: 500; }
+
+.q-kind {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border: 1px solid var(--rule-firm);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* ══ 提交 ═════════════════════════════════════════════════ */
+
+.go {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.go button {
+  font: inherit;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 10px 22px;
+  color: var(--paper-raise);
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  cursor: pointer;
+  transition: background .14s;
+}
+
+.go button:hover:not(:disabled) { background: var(--blue); border-color: var(--blue); }
+.go button:disabled { opacity: .5; cursor: progress; }
+
+/* 次级按钮：自定义 / 还原，用描边而不是实心，避免与「判读」抢注意力 */
+.go button.ghost {
+  font-size: 11.5px;
+  font-weight: 400;
+  letter-spacing: .04em;
+  text-transform: none;
+  padding: 8px 13px;
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--rule-firm);
+}
+
+.go button.ghost:hover:not(:disabled) {
+  color: var(--ink);
+  background: var(--paper-sunk);
+  border-color: var(--ink-3);
+}
+
+/* 问句编辑器：等宽、可拉高，和协议本身的观感一致 */
+#q-json {
+  width: 100%;
+  min-height: 340px;
+  resize: vertical;
+  padding: 13px 15px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.7;
+  tab-size: 2;
+  color: var(--ink);
+  background: var(--paper-raise);
+  border: 1px solid var(--rule-firm);
+  border-radius: 0;
+  outline: none;
+  transition: border-color .14s, box-shadow .14s;
+}
+
+#q-json:focus {
+  border-color: var(--blue);
+  box-shadow: inset 3px 0 0 var(--blue);
+}
+
+#q-msg { margin: 8px 0 0; min-height: 1.3em; }
+
+.go .keys {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+}
+
+/* ══ 判读区 ═══════════════════════════════════════════════ */
+
+.void {
+  padding: 34px 22px;
+  border: 1px dashed var(--rule-firm);
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+
+.void p { margin: 0 0 5px; }
+.void .dim { font-size: 11.5px; color: #A0A69E; }
+
+/* 处置提示：只在动作真的需要改变时出现 */
+.verdict {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--rule-firm);
+  border-left: 3px solid var(--red);
+  background: var(--paper-raise);
+  font-size: 12.5px;
+  animation: ink-in .3s ease-out;
+}
+
+.verdict[data-level="clear"] { border-left-color: var(--blue); }
+
+.verdict .tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--red);
+  white-space: nowrap;
+  padding-top: 1px;
+}
+
+.verdict[data-level="clear"] .tag { color: var(--blue); }
+
+/* ── 单条判读 ───────────────────────────────────────────── */
+
+.a {
+  padding: 13px 0 15px;
+  border-bottom: 1px solid var(--rule);
+  animation: ink-in .34s ease-out backwards;
+}
+
+@keyframes ink-in {
+  from { opacity: 0; transform: translateY(4px); }
+}
+
+/* 单一刻度（noul 的概率） */
+.rail-track {
+  position: relative;
+  height: 20px;
+  background: var(--paper-sunk);
+  border: 1px solid var(--rule-firm);
+}
+@keyframes ink-in {
+  from { opacity: 0; transform: translateY(4px); }
+}
+
+.a-top {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-bottom: 9px;
+}
+
+.a-id {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--blue);
+}
+
+.a-q {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.a-read {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.a-value {
+  font-family: var(--mono);
+  font-size: 27px;
+  font-weight: 500;
+  letter-spacing: -.015em;
+  line-height: 1.05;
+}
+
+.a-value.sm { font-size: 16px; }
+
+.a-unit {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+/* 被选中的项：一支红铅笔在读数上画的圈 */
+.a-pick {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--red);
+  border: 1px solid currentColor;
+  padding: 1px 6px;
+}
+
+/* ══ 标尺 —— 整套设计的核心 ═══════════════════════════════
+   三种问句共用同一块底：0→1 的标尺。
+   noul 是一个刻度，choice 是 N 个刻度，score 是 M 个档位加指针。
+   分辨率不同，底子相同 —— 这正是想让人看见的事。
+   ═══════════════════════════════════════════════════════ */
+
+.rail {
+  margin-top: 11px;
+  position: relative;
+}
+
+.rail-axis {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--ink-3);
+  margin-bottom: 4px;
+}
+
+/* 单一刻度（noul / score 的总分） */
+.rail-track {
+  position: relative;
+  height: 20px;
+  background: var(--paper-sunk);
+  border: 1px solid var(--rule-firm);
+  overflow: hidden;
+}
+
+/* 概率质量：蓝图蓝的墨迹 */
+.rail-mass {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--blue);
+  width: 0;
+  transition: width .55s cubic-bezier(.2,.75,.3,1);
+}
+
+/* 刻度线 */
+.rail-ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.rail-ticks i {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: rgba(233,235,230,.55);
+}
+
+/* 中点参照：0.5 是"模型在说它不知道"，必须标出来 */
+.rail-mid {
+  position: absolute;
+  top: -3px; bottom: -3px;
+  left: 50%;
+  width: 1px;
+  background: var(--ink-3);
+  z-index: 2;
+}
+
+.rail-mid::after {
+  content: "0.5";
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+/* 分档标尺（choice / score 的概率分布） */
+.seg {
+  display: flex;
+  border: 1px solid var(--rule-firm);
+  height: 26px;
+  background: var(--paper-sunk);
+}
+
+.seg-part {
+  position: relative;
+  border-left: 1px solid var(--rule);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.seg-part:first-child { border-left: 0; }
+
+.seg-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--blue);
+  width: 0;
+  transition: width .55s cubic-bezier(.2,.75,.3,1);
+}
+
+/* 选中项在标尺上也用红铅笔标一道 */
+.seg-part[data-pick="true"] { box-shadow: inset 0 0 0 2px var(--red); }
+
+/* 分档的读数行 */
+.rows { margin-top: 6px; }
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.4rem;
+  gap: 10px;
+  align-items: baseline;
+  padding: 2.5px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.row-name {
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row[data-pick="true"] .row-name { color: var(--red); }
+.row[data-zero="true"] .row-name { color: #A0A69E; }
+
+.row-pct {
+  text-align: right;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.row[data-pick="true"] .row-pct { color: var(--red); font-weight: 500; }
+
+/* 分数落点指针 */
+.pointer {
+  position: relative;
+  height: 15px;
+  margin-top: 3px;
+}
+
+.pointer i {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--red);
+  transition: left .55s cubic-bezier(.2,.75,.3,1);
+}
+
+/* 推导行：把加权平均的计算过程摊开 */
+.derive {
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1.75;
+  color: var(--ink-3);
+  overflow-wrap: anywhere;
+}
+
+.derive b { color: var(--ink-2); font-weight: 500; }
+
+/* ══ 通信记录 ═════════════════════════════════════════════
+   这一块存在的意义：让"界面上显示的"就是"真正发生的"。
+   ═══════════════════════════════════════════════════════ */
+
+.wire {
+  border-top: 2px solid var(--ink);
+  padding: 20px 32px 60px;
+  background: var(--paper);
+}
+
+@media (max-width: 1020px) { .wire { padding: 20px 20px 48px; } }
+
+.wire-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.wire-block .hdr { margin-bottom: 8px; }
+
+pre {
+  margin: 0;
+  padding: 12px 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.68;
+  color: var(--ink);
+  background: var(--paper-raise);
+  border: 1px solid var(--rule-firm);
+  overflow-x: auto;
+  tab-size: 2;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+/* 键名与值分开着色，读起来像协议而不是一团字 */
+.k { color: var(--blue); }
+.s { color: #2F6B3F; }
+.n { color: var(--red); }
+.b { color: #7A4BA8; }
+
+/* 时序 —— 一次请求里真正发生的先后 */
+.trace { border-top: 1px solid var(--rule); }
+
+.trace-step {
+  display: grid;
+  grid-template-columns: 5.2rem 1fr auto;
+  gap: 0 12px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 12px;
+}
+
+.trace-t {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  text-align: right;
+}
+
+.trace-w { color: var(--ink); }
+
+.trace-d {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
