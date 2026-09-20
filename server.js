@@ -11,6 +11,7 @@
  * 这个工具的全部价值就在于没有那一层。
  */
 
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { config } from 'dotenv';
 config({ path: '.env.local' });
@@ -35,8 +36,23 @@ if (!API_KEY) {
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 
-// 绝对路径：相对路径依赖进程 CWD，Vercel 上不可靠
-app.use(express.static(path.join(import.meta.dirname, 'public')));
+// 静态目录的位置在打包环境下不一定和入口文件同层，两个候选都试。
+// WARN: 若两个都不存在，就是打包时漏了——需要在 vercel.json 里配 includeFiles。
+const PUBLIC_CANDIDATES = [
+  path.join(import.meta.dirname, 'public'),
+  path.join(process.cwd(), 'public'),
+];
+const PUBLIC_DIR = PUBLIC_CANDIDATES.find((p) => existsSync(p));
+
+if (!PUBLIC_DIR) {
+  console.warn(
+    '[警告] 找不到静态目录，页面会 404。' +
+    'Vercel 上请在 vercel.json 里配 functions["server.js"].includeFiles = "public/**"。' +
+    `已尝试：${PUBLIC_CANDIDATES.join('、')}`
+  );
+} else {
+  app.use(express.static(PUBLIC_DIR));
+}
 
 /**
  * 把界面上的问句转成 API 的 wire 格式。

@@ -81,10 +81,22 @@ vercel --prod
 - ❌ 建 `api/` 目录放路由 — 框架本身就是 app
 - ❌ 加 build 脚本 — Vercel 自己处理打包
 
-**静态文件是唯一的不确定点。** 官方文档只明确了 `vercel dev` 时「`public/` 自动服务」，生产环境会不会把 `public/` 打进 Function 包没写死。部署完先打开首页，确认 `/style.css` 和 `/app.js` 返回 200。万一 404，加一个 `vercel.json`：
+**静态文件不会自动进包，必须配 `includeFiles`。** 这一点已经实测确认：不配的话部署成功、函数也能跑，但打开首页是 `Cannot GET /`——那是 Express 的默认 404，说明请求到达了你的代码，只是 `public/` 没被打进 Function 包。官方文档说的「`public/` 自动服务」只适用于 `vercel dev`，生产环境不成立。
+
+本仓库已经带上了 `vercel.json`：
 
 ```json
-{ "functions": { "server.js": { "includeFiles": "public/**" } } }
+{
+  "functions": {
+    "server.js": { "includeFiles": "public/**" }
+  }
+}
+```
+
+如果你遇到同样的 404，看函数日志里有没有这行——`server.js` 会自己报出来：
+
+```
+[警告] 找不到静态目录，页面会 404。
 ```
 
 #### Railway
@@ -188,8 +200,11 @@ app.use('/api/', rateLimit({ windowMs: 60_000, max: 10 }));
 
 ## 排查
 
-**页面打开是空的 / 接口 500**
-看平台日志里有没有 `[无法启动] 缺少 TYPESAFE_API_KEY`。说明环境变量没生效。
+**打开首页显示 `Cannot GET /`**
+这是 Express 的默认 404，意味着函数跑起来了、请求到达了代码，但静态目录没进包。检查 `vercel.json` 里的 `includeFiles` 是否生效，或看函数日志里有没有 `[警告] 找不到静态目录`。注意：`/api/evaluate` 这时其实是通的，可以试一下——如果它也通，就百分之百是静态文件的问题。
+
+**接口 500，错误信息是「服务端没有配置 TYPESAFE_API_KEY」**
+环境变量没生效。去 Settings → Environment Variables 加 `TYPESAFE_API_KEY`，然后**重新部署**——环境变量的改动不会自动应用到已有部署。
 
 **本地能跑，线上报 502**
 `server.js` 把上游失败也透传了，看响应里的 `error` 字段。账户额度或 key 权限问题居多。
