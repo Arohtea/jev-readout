@@ -15,7 +15,7 @@ Disallowed CORS origin
 响应里没有 `access-control-allow-origin`。这意味着两件事：
 
 1. **前端不能直接持有 API key。** 就算你把 key 塞进前端代码，浏览器也会在预检阶段被拦下，请求根本发不出去。
-2. **必须有服务端。** 纯静态托管（GitHub Pages、Netlify 静态站点、Vercel 的纯前端模式）跑不起来。
+2. **必须有服务端。** 纯静态托管（GitHub Pages、Netlify 静态站点、Vercel 的纯静态模式）跑不起来。但 **Vercel 的 Node 后端模式可以**——它能把 Express 跑成 Serverless Function，见下文。
 
 所以部署这个项目 = 把 `server.js` 跑在一个能出网的主机上，让 key 待在服务端环境变量里。
 
@@ -48,6 +48,44 @@ git ls-files | grep -i env    # 应该没有输出
 ### 第二步：选一个主机
 
 下面三个都能跑 Express，都有免费额度。共同点是：**在平台的配置界面里填环境变量，不要把 key 写进代码或仓库。**
+
+#### Vercel（本项目已适配）
+
+Vercel 能把 Express 应用直接跑成 Serverless Function。不需要 `vercel.json`，不需要 `api/` 目录——**`server.js` 本身就是入口**（Vercel 的入口文件名探测列表里含 `server`）。
+
+`server.js` 已为 Vercel 做了四处调整：
+
+- `export default app` — Vercel 需要拿到 app 实例
+- `if (!process.env.VERCEL) { app.listen(...) }` — 线上由 Vercel 代理请求，不自己占端口
+- `express.static(path.join(import.meta.dirname, 'public'))` — 用绝对路径，不依赖进程 CWD
+- 缺 key 时只 `console.warn`，不再 `process.exit(1)` — 构建期 Vercel 会 import 入口文件，退出会导致整个部署失败
+
+**先配环境变量，再部署。** 目前即使顺序反了也不会构建失败，但请求会返回 500。
+
+```bash
+# 1. 配环境变量
+echo "你的key" | vercel env add TYPESAFE_API_KEY production --yes
+echo "你的key" | vercel env add TYPESAFE_API_KEY preview --yes
+
+# 2. 部署
+vercel --prod
+```
+
+也可以在 [vercel.com](https://vercel.com) 导入 GitHub 仓库，在 Settings → Environment Variables 里填 `TYPESAFE_API_KEY`，然后点 Deploy。
+
+**`.env.local` 不会被上传。** Vercel CLI 的默认忽略列表里硬编码了 `.env.local`，连 `.vercelignore` 的 allowlist 都覆盖不了它；构建阶段还会额外排除所有 `.env*` 前缀的文件。本地 key 不会因为跑一次 `vercel` 而泄露。
+
+**不要做的事**（Vercel 官方列为 Express 部署的反模式）：
+
+- ❌ 加 `vercel.json` 的 `rewrites` — 路由会自动探测
+- ❌ 建 `api/` 目录放路由 — 框架本身就是 app
+- ❌ 加 build 脚本 — Vercel 自己处理打包
+
+**静态文件是唯一的不确定点。** 官方文档只明确了 `vercel dev` 时「`public/` 自动服务」，生产环境会不会把 `public/` 打进 Function 包没写死。部署完先打开首页，确认 `/style.css` 和 `/app.js` 返回 200。万一 404，加一个 `vercel.json`：
+
+```json
+{ "functions": { "server.js": { "includeFiles": "public/**" } } }
+```
 
 #### Railway
 

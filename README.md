@@ -73,9 +73,16 @@ docs/               详细文档
 
 ## 部署
 
-**浏览器不能直连 TypeSafe。** 它的 CORS 预检返回 `Disallowed CORS origin`，所以 API key 只能留在服务端——纯静态托管（GitHub Pages）跑不起来。
+**浏览器不能直连 TypeSafe。** 它的 CORS 预检返回 `Disallowed CORS origin`，所以 API key 只能留在服务端——GitHub Pages 这类的纯静态托管跑不起来。
 
-可行的方案见 [docs/deploy.md](docs/deploy.md)。
+Vercel、Railway、Render、Fly.io 都能跑，因为它们是执行 Node 的。**Vercel 最简单**，`server.js` 已经适配好了：
+
+```bash
+echo "你的key" | vercel env add TYPESAFE_API_KEY production --yes
+vercel --prod
+```
+
+完整步骤（含各平台的差异和排查）见 [docs/deploy.md](docs/deploy.md)。
 
 ## 文档
 

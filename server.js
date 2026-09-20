@@ -11,6 +11,7 @@
  * 这个工具的全部价值就在于没有那一层。
  */
 
+import path from 'node:path';
 import { config } from 'dotenv';
 config({ path: '.env.local' });
 
@@ -20,14 +21,22 @@ const PORT = process.env.PORT || 5180;
 const API_KEY = process.env.TYPESAFE_API_KEY;
 const ENDPOINT = 'https://api.typesafe.ai/v1/systemone';
 
+// 缺 key 只警告、不退出。
+// WARN: 这里曾经是 process.exit(1)，但 Vercel 打包时会 import 这个模块，
+// 构建期的进程身上没有运行时环境变量，退出会让整个部署失败。
+// 改成让请求自己带着错误返回，问题照样看得见，且不阻断构建。
 if (!API_KEY) {
-  console.error('[无法启动] 缺少 TYPESAFE_API_KEY，请检查 .env.local');
-  process.exit(1);
+  console.warn(
+    '[警告] 没有 TYPESAFE_API_KEY。本地请检查 .env.local，' +
+    '线上请在平台的环境变量里配置。在此之前 /api/evaluate 会返回 500。'
+  );
 }
 
 const app = express();
 app.use(express.json({ limit: '2mb' }));
-app.use(express.static('public'));
+
+// 绝对路径：相对路径依赖进程 CWD，Vercel 上不可靠
+app.use(express.static(path.join(import.meta.dirname, 'public')));
 
 /**
  * 把界面上的问句转成 API 的 wire 格式。
@@ -88,6 +97,13 @@ function recommendAction(answers) {
 
 app.post('/api/evaluate', async (req, res) => {
   const { state, questions } = req.body ?? {};
+
+  // 配置缺失要明确说出来，不要让请求揣着 Bearer undefined 去撞上游
+  if (!API_KEY) {
+    return res.status(500).json({
+      error: '服务端没有配置 TYPESAFE_API_KEY。本地请检查 .env.local，线上请检查平台的环境变量。',
+    });
+  }
 
   if (typeof state !== 'string' || !state.trim()) {
     return res.status(400).json({ error: 'state 不能为空' });
@@ -159,6 +175,11 @@ app.post('/api/evaluate', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Jev Readout → http://localhost:${PORT}`);
-});
+// 本地直接跑；Vercel 上由它的 handler 代理请求，不要自己占端口
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Jev Readout → http://localhost:${PORT}`);
+  });
+}
+
+export default app;
